@@ -48,9 +48,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          # Вказуємо, що Dockerfile та контекст знаходяться в папці web
           context: ./web
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ghcr.io/${{ github.actor }}/lab-1-setup:latest
