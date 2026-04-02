@@ -13,6 +13,9 @@ permissions:
 jobs:
   quality-checks:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
@@ -20,11 +23,12 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: './web/package-lock.json'
       - name: Install dependencies
         run: npm ci
       - name: Run Lint
         run: npm run lint
-      - name: Run Tests
+      - name: Run Unit Tests
         run: npm run test
 
   build-and-publish:
@@ -44,7 +48,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          # Вказуємо, що Dockerfile та контекст знаходяться в папці web
+          context: ./web
           push: true
           tags: ghcr.io/${{ github.repository }}:latest
           cache-from: type=gha
