@@ -12,5 +12,5 @@
     "build": "vite build",
     "test": "vitest run",
     "preview": "vite preview"
-  },
+  }
 }
