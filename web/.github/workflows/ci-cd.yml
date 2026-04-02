@@ -13,6 +13,9 @@ permissions:
 jobs:
   quality-checks:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,22 +25,16 @@ jobs:
         with:
           node-version: 'latest'
           cache: 'npm'
-          # Точний шлях до файлу залежностей для кешування
           cache-dependency-path: './web/package-lock.json'
 
       - name: Install dependencies
-        # Виконуємо установку саме в папці web
         run: npm ci
-        working-directory: ./web
 
       - name: Run Lint
         run: npm run lint
-        working-directory: ./web
 
       - name: Run Unit Tests
-        # Запуск Vitest run для одноразової перевірки в CI
         run: npm run test
-        [cite_start]working-directory: ./web [cite: 158]
 
   build-and-publish:
     needs: quality-checks
@@ -55,25 +52,24 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          [cite_start]password: ${{ secrets.GITHUB_TOKEN }} [cite: 117]
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
+      - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
+            type=ref,event=branch
             type=sha,format=short
-            latest [cite: 263-271]
+            latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          # Точне вказання контексту, де лежить Dockerfile
           context: ./web
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Використання кешу GitHub Actions для прискорення збірки
           cache-from: type=gha
-          [cite_start]cache-to: type=gha,mode=max [cite: 272-280, 320]
+          cache-to: type=gha,mode=max
